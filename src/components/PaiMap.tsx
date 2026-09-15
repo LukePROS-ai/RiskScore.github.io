@@ -41,10 +41,33 @@ export default function PaiMap({
       zoomControl: false,
       // Leaflet handles wheel events only inside its map container.
       scrollWheelZoom: true,
-      minZoom: 8,
+      minZoom: 7,
       maxZoom: 17,
+      maxBoundsViscosity: 1,
     });
     map.current = instance;
+    const provinceBounds = L.geoJSON(geo.province).getBounds();
+    instance.setMaxBounds(provinceBounds);
+    // Opaque outside mask: district polygons together cover Mae Hong Son.
+    // Even-odd fill leaves each official district visible inside the mask.
+    const provinceRings = geo.province.features.flatMap((feature) => {
+      const polygons = feature.geometry.type === "Polygon"
+        ? [feature.geometry.coordinates]
+        : feature.geometry.coordinates;
+      return polygons.map((polygon) =>
+        polygon[0].map(([lng, lat]) => [lat, lng] as L.LatLngTuple),
+      );
+    });
+    L.polygon([
+      [[85, -180], [85, 180], [-85, 180], [-85, -180]],
+      ...provinceRings,
+    ], {
+      stroke: false,
+      fillColor: "#f5f6f3",
+      fillOpacity: 1,
+      fillRule: "evenodd",
+      interactive: false,
+    }).addTo(instance);
     L.control
       .zoom({
         position: "topleft",
@@ -289,7 +312,7 @@ export default function PaiMap({
         aria-label="แผนที่อำเภอปาย เลือกตำบล หมู่บ้าน หรือสถานี ใช้เมนูเลือกพื้นที่แทนได้"
       />
       <div className="map-top-label">
-        <MapPin size={15} /> อำเภอปาย <span>แม่ฮ่องสอน</span>
+        <MapPin size={15} /> แม่ฮ่องสอน <span>ประเมินพื้นที่อำเภอปาย</span>
       </div>
       <div className="map-actions">
         <button

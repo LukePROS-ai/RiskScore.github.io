@@ -19,7 +19,9 @@ for (const [layer, file, where, fields] of [
     "VILL_IDN,VILL_CODE,VILL_TN,TB_IDN,TB_TN,YEAR_",
   ],
   [3, "district", "P_code='58' AND A_code='03'", "*"],
+  [3, "province", "P_code='58'", "*"],
 ]) {
+  if (process.argv.includes("--province-only") && file !== "province") continue;
   const params = new URLSearchParams({
     where,
     outFields: fields,

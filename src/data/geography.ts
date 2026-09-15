@@ -21,14 +21,15 @@ export type Geography = {
   >;
   villages: FeatureCollection<Point, VillageProperties>;
   district: FeatureCollection<Polygon | MultiPolygon>;
+  province: FeatureCollection<Polygon | MultiPolygon>;
 };
 export const geographySource =
   "https://gistdaportal.gistda.or.th/arcgis/rest/services/" +
   encodeURIComponent("ข้อมูลเขตการปกครอง") +
   "/MapServer";
 export async function loadGeography(signal?: AbortSignal): Promise<Geography> {
-  const [subdistricts, villages, district] = await Promise.all(
-    ["subdistricts", "villages", "district"].map(async (name) => {
+  const [subdistricts, villages, district, province] = await Promise.all(
+    ["subdistricts", "villages", "district", "province"].map(async (name) => {
     const response = await fetch(`${import.meta.env.BASE_URL}data/${name}.geojson`, {
       signal,
     });
@@ -39,5 +40,5 @@ export async function loadGeography(signal?: AbortSignal): Promise<Geography> {
       return data;
     }),
   );
-  return { subdistricts, villages, district };
+  return { subdistricts, villages, district, province };
 }
