@@ -4,6 +4,7 @@ import { LocateFixed, Layers, MapPin } from "lucide-react";
 import type { Geography } from "../data/geography";
 import type { Selection, Station } from "../domain/types";
 import { assess, statusTone } from "../domain/rules";
+import { mountProvinceMask } from "./provinceMask";
 type Props = {
   geo: Geography;
   stations: Station[];
@@ -44,31 +45,11 @@ export default function PaiMap({
       minZoom: 7,
       maxZoom: 17,
       maxBoundsViscosity: 1,
+      zoomAnimation: false,
     });
     map.current = instance;
     const provinceBounds = L.geoJSON(geo.province).getBounds();
     instance.setMaxBounds(provinceBounds);
-    // Opaque outside mask: district polygons together cover Mae Hong Son.
-    // Even-odd fill leaves each official district visible inside the mask.
-    const provinceRings = geo.province.features.flatMap((feature) => {
-      const polygons = feature.geometry.type === "Polygon"
-        ? [feature.geometry.coordinates]
-        : feature.geometry.coordinates;
-      return polygons.map((polygon) =>
-        polygon[0].map(([lng, lat]) => [lat, lng] as L.LatLngTuple),
-      );
-    });
-    L.polygon([
-      [[85, -180], [85, 180], [-85, 180], [-85, -180]],
-      ...provinceRings,
-    ], {
-      stroke: false,
-      fillColor: "#f5f6f3",
-      fillOpacity: 1,
-      fillRule: "evenodd",
-      noClip: true,
-      interactive: false,
-    }).addTo(instance);
     L.control
       .zoom({
         position: "topleft",
@@ -81,6 +62,7 @@ export default function PaiMap({
       .addTo(instance);
     const bounds = L.geoJSON(geo.district).getBounds();
     instance.fitBounds(bounds, { padding: [24, 24] });
+    const removeProvinceMask = mountProvinceMask(instance, geo.province);
     const tile = L.tileLayer(
       terrain
         ? "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -202,6 +184,7 @@ export default function PaiMap({
       pinMap = pins.current;
     return () => {
       resize.disconnect();
+      removeProvinceMask();
       instance.remove();
       map.current = null;
       areaMap.clear();
