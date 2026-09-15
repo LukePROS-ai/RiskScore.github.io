@@ -11,7 +11,7 @@ export function mountProvinceMask(map: L.Map, province: Geography["province"]) {
   path.setAttribute("fill", "#dfebdc");
   path.setAttribute("fill-rule", "evenodd");
   svg.append(path);
-  map.getContainer().append(svg);
+  map.getPane("mapPane")!.append(svg);
   const rings = province.features.flatMap(({ geometry }) => {
     const polygons = geometry.type === "Polygon"
       ? [geometry.coordinates] : geometry.coordinates;
@@ -19,6 +19,11 @@ export function mountProvinceMask(map: L.Map, province: Geography["province"]) {
   });
   const redraw = () => {
     const size = map.getSize();
+    const origin = map.containerPointToLayerPoint([0, 0]);
+    svg.style.left = `${origin.x}px`;
+    svg.style.top = `${origin.y}px`;
+    svg.style.width = `${size.x}px`;
+    svg.style.height = `${size.y}px`;
     const holes = rings.map((ring) => ring.map(([lng, lat], i) => {
       const p = map.latLngToContainerPoint([lat, lng]);
       return `${i === 0 ? "M" : "L"}${p.x},${p.y}`;
