@@ -66,6 +66,7 @@ export default function PaiMap({
       fillColor: "#f5f6f3",
       fillOpacity: 1,
       fillRule: "evenodd",
+      noClip: true,
       interactive: false,
     }).addTo(instance);
     L.control
