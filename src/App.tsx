@@ -25,6 +25,7 @@ import PaiMap from "./components/PaiMap";
 import AreaPanel, { emptySelection } from "./components/AreaPanel";
 import Dashboard, { formatTime } from "./components/Dashboard";
 import RulesDetails from "./components/RulesDetails";
+import StationPreview from "./components/StationPreview";
 const scenarios: Record<Scenario, string> = {
   normal: "สถานีตัวอย่าง",
   green: "เผาได้",
@@ -48,6 +49,8 @@ export default function App() {
   const [refresh, setRefresh] = useState(0);
   const [now, setNow] = useState(Date.now());
   const [panelOpen, setPanelOpen] = useState(true);
+  const [stationPreviewOpen, setStationPreviewOpen] = useState(false);
+  const stationTrigger = useRef<HTMLElement | null>(null);
   const [online, setOnline] = useState(navigator.onLine);
   const drawer = useRef<HTMLDialogElement>(null);
   const drawerTrigger = useRef<HTMLButtonElement>(null);
@@ -112,7 +115,18 @@ export default function App() {
       clearInterval(timer);
     };
   }, [geo, scenario, refresh]);
-  const onSelect = useCallback((s: Selection) => setSelection(s), []);
+  const onSelect = useCallback((s: Selection) => {
+    setSelection(s);
+    setStationPreviewOpen(Boolean(s.stationId));
+    if (s.stationId) {
+      stationTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      drawer.current?.close();
+    }
+  }, []);
+  const closeStationPreview = () => {
+    setStationPreviewOpen(false);
+    if (stationTrigger.current?.isConnected) stationTrigger.current.focus({ preventScroll: true });
+  };
   const available = useMemo(
     () => (online && !error && !loading ? (data?.stations ?? []) : []),
     [data, error, online, loading],
@@ -437,6 +451,16 @@ export default function App() {
           ค่าตรวจวัดสาธิตไม่ใช่ข้อมูลภาคสนาม
         </p>
       </footer>
+      {stationPreviewOpen && selection.stationId && (
+        <StationPreview
+          stationId={selection.stationId}
+          station={available.find((station) => station.id === selection.stationId)}
+          location={[selectedVillage?.properties.VILL_TN, selectedArea?.properties.T_Name_T, "อำเภอปาย"].filter(Boolean).join(" · ")}
+          now={now}
+          message={!online ? "อุปกรณ์นี้ออฟไลน์" : loading ? "กำลังโหลดข้อมูลล่าสุด…" : error}
+          onClose={closeStationPreview}
+        />
+      )}
       <dialog
         ref={drawer}
         aria-label="เลือกพื้นที่ประเมิน"
