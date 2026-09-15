@@ -317,14 +317,6 @@ main {
 .leaflet-container {
   font: inherit;
 }
-.province-mask {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 450;
-  pointer-events: none;
-}
 .leaflet-tile-pane {
   filter: saturate(0.45) contrast(0.94) brightness(1.04);
 }

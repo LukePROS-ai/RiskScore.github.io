@@ -45,7 +45,7 @@ export default function PaiMap({
       minZoom: 7,
       maxZoom: 17,
       maxBoundsViscosity: 1,
-      zoomAnimation: false,
+      zoomAnimation: true,
     });
     map.current = instance;
     const provinceBounds = L.geoJSON(geo.province).getBounds();
