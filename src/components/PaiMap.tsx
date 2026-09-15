@@ -39,7 +39,8 @@ export default function PaiMap({
     if (!container.current) return;
     const instance = L.map(container.current, {
       zoomControl: false,
-      scrollWheelZoom: false,
+      // Leaflet handles wheel events only inside its map container.
+      scrollWheelZoom: true,
       minZoom: 8,
       maxZoom: 17,
     });
